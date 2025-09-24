@@ -1,5 +1,6 @@
 import React from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode'; // You might need to install this: npm install jwt-decode
 import { useNavigate } from 'react-router-dom';
 
 // Your client ID
@@ -27,42 +28,49 @@ const calculateAge = (birthdate) => {
 const Login = () => {
   const navigate = useNavigate();
 
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      console.log('Login Success', tokenResponse);
+  const handleLoginSuccess = async (credentialResponse) => {
+    // The 'credential' field contains the ID Token.
+    const idToken = credentialResponse.credential;
+    console.log("Received ID Token:", idToken);
+    
+    // You can decode it on the frontend to get basic user info if needed
+    const decoded = jwtDecode(idToken);
+    console.log("Decoded Token:", decoded);
 
-      // Fetch user's profile information using Google API
-      fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    try {
+      // **This is the crucial step: send the ID Token to your backend**
+      const response = await fetch('http://localhost:8175/auth/google', { // Ensure the port matches your server.js
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${tokenResponse.access_token}`,
+          'Content-Type': 'application/json',
         },
-      })
-        .then((res) => res.json())
-        .then((profile) => {
-          console.log(profile);
+        body: JSON.stringify({ idToken: idToken }), // The backend expects an object with an 'idToken' key
+      });
 
-          // Calculate age if the birthdate is available
-          const age = profile.birthdate
-            ? calculateAge(profile.birthdate)
-            : null;
+      if (!response.ok) {
+        throw new Error('Backend authentication failed');
+      }
 
-          // Redirect to Home page with user info (email, id, age)
-          navigate('/', {
-            state: { email: profile.email, id: profile.sub, age },
-          });
-        })
-        .catch((err) => console.log(err));
-    },
-    onError: (error) => {
-      console.log('Login Failed', error);
-    },
-    scope:
-      'https://www.googleapis.com/auth/user.birthday.read', // Added scopes for profile and birthday
-  });
+      const data = await response.json();
+      console.log('Backend Response:', data);
+      
+      navigate('/');
+
+    } catch (error) {
+      console.error('Login Failed:', error);
+    }
+  };
+
+  const handleLoginError = () => {
+    console.log('Login Failed');
+  };
 
   return (
     <div>
-      <button onClick={() => login()}>Login with Google</button>
+      <GoogleLogin
+        onSuccess={handleLoginSuccess}
+        onError={handleLoginError}
+      />
     </div>
   );
 };
