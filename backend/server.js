@@ -24,18 +24,21 @@ dotenv.config();
 // Security headers (must be first)
 app.use(securityHeaders);
 
-// (FIX) Prevent MIME type sniffing
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  next();
-});
-
 // Request logging
 app.use(requestLogger);
 
 // CORS configuration
 app.use(cors(corsOptions));
 app.use(corsErrorHandler);
+
+// (FIX) Disable 'X-Powered-By' header
+app.disable('x-powered-by');
+
+// (FIX) Prevent MIME type sniffing
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  next();
+});
 
 // Body parsing with size limits
 app.use(bodyParser.json({ 

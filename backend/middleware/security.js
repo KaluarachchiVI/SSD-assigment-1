@@ -50,9 +50,9 @@ const translationLimiter = createRateLimit(
   'Too many translation requests, please slow down'
 );
 
-// Security headers configuration
+// Security headers configuration   //
 const securityHeaders = helmet({
-  contentSecurityPolicy: {
+  contentSecurityPolicy: {           // (FIX) Helps prevent XSS attacks (CSP)
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
@@ -60,31 +60,18 @@ const securityHeaders = helmet({
       imgSrc: ["'self'", "data:", "https:"],
       scriptSrc: ["'self'", "https://apis.google.com"],
       connectSrc: ["'self'", "https://api.mymemory.translated.net"],
-      frameSrc: ["'self'", "https://accounts.google.com"],
-      
+      // (FIX) The 'frame-ancestors' directive is used to prevent clickjacking.
+      frameAncestors: ["'self'"], 
       objectSrc: ["'none'"],
-
-      // (FIX) Prevent MIME type sniffing
-      xContentTypeOptions: ["nosniff"],
-
-      // (FIX) Prevent cross-site scripting (XSS)
-      xFrameOptions: ["DENY"],
-
-      // (FIX) Prevent clickjacking (CSP bypass)
-      frameAncestors: ["'self'"],
-
-      // (FIX) Prevent information leak via X-Powered-By header
-      xPoweredBy: false,
-
-      upgradeInsecureRequests: []
-    }
+      upgradeInsecureRequests: [],
+    },
   },
-  crossOriginEmbedderPolicy: false,
+  // (FIX) Tells browsers to always use HTTPS.
   hsts: {
-    maxAge: 31536000,
+    maxAge: 31536000, // 1 year in seconds
     includeSubDomains: true,
-    preload: true
-  }
+    preload: true,
+  },
 });
 
 // CORS configuration
@@ -97,7 +84,8 @@ const corsOptions = {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    //if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.indexOf(origin) === 0) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
