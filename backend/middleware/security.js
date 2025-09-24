@@ -53,24 +53,37 @@ const translationLimiter = createRateLimit(
 // Security headers configuration
 const securityHeaders = helmet({
   contentSecurityPolicy: {
+    useDefaults: true,
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      styleSrc: ["'self'", "https://fonts.googleapis.com"],
+      styleSrcElem: ["'self'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      scriptSrc: ["'self'", "https://apis.google.com"],
+      scriptSrc: ["'self'"],
+      scriptSrcElem: ["'self'"],
       connectSrc: ["'self'", "https://api.mymemory.translated.net"],
+      workerSrc: ["'self'"],
+      manifestSrc: ["'self'"],
+      mediaSrc: ["'self'"],
       frameSrc: ["'self'", "https://accounts.google.com"],
       objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
       upgradeInsecureRequests: []
     }
   },
   crossOriginEmbedderPolicy: false,
+  referrerPolicy: { policy: 'no-referrer' },
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
     preload: true
-  }
+  },
+  xPoweredBy: false,
+  noSniff: true,
+  xssFilter: true
 });
 
 // CORS configuration
