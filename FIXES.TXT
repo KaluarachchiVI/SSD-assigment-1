@@ -1,0 +1,41 @@
+Alerts Resolved
+
+The following alerts from the original scan report are no longer present in the new report:
+
+# vulnerability 01 - Information Leakage (Server Technology)
+
+Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s) (Low Risk):
+This was flagged on multiple endpoints. The X-Powered-By header reveals that the application is running on Express, 
+which could allow attackers to target known framework vulnerabilities. By using the helmet middleware and explicitly calling app.disable('x-powered-by'), 
+this header is now completely removed from all server responses.
+
+
+# vulnerability 02 - Content Security Policy (CSP) Header Not Set
+
+Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, 
+including Cross Site Scripting (XSS) and data injection attacks.
+Adding Content Security Policy { } using helmet can prevent this.
+
+
+# vulnerability 03 - Security misconfiguration (XSS)
+
+Content Security Policy (CSP) Header Not Set (Medium Risk): 
+This alert was for the root URL (http://localhost:3000/). 
+The new report shows that a CSP header is now present (frameAncestors), 
+which helps prevent XSS and other data injection attacks by restricting the sources from which content can be loaded.
+
+
+# vulnerability 04 - CORS misconfiguration
+
+This CORS misconfiguration could allow an attacker to perform AJAX queries to the vulnerable website from a malicious page loaded by the victim's user agent.
+If a web resource contains sensitive information, the origin should be properly specified in the Access-Control-Allow-Origin header. 
+Only trusted websites needing this resource should be specified in this header, with the most secured protocol supported.
+
+
+# vulnerability 05 - Security misconfiguration (clickjacking)
+
+Missing Anti-clickjacking Header (Medium Risk): 
+This was flagged for the root URL (http://localhost:3000/). 
+By configuring the CSP header with a frame-ancestors directive or adding X-Frame-Options headers, prevented the site from being embedded in iframes, 
+which is a key part of clickjacking attacks.
+
