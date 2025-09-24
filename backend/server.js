@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const csrf = require('csurf');
+
 const { 
   generalLimiter, 
   authLimiter, 
@@ -15,6 +17,9 @@ const {
   requestLogger,
   errorHandler 
 } = require('./middleware/security');
+
+const userRoute = require("./routers/user.route.js");  // ✅ matches default
+
 
 const app = express();
 
@@ -28,7 +33,12 @@ app.use(securityHeaders);
 app.use(requestLogger);
 
 // CORS configuration
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: 'http://localhost:3000', // frontend URL
+  credentials: true,               // allow cookies
+  allowedHeaders: ['Content-Type', 'csrf-token'], // <-- include csrf-token
+}));
+
 app.use(corsErrorHandler);
 
 // Body parsing with size limits
@@ -45,6 +55,8 @@ app.use(bodyParser.urlencoded({
 
 // Cookie parser
 app.use(cookieParser());
+app.use(csrf({ cookie: { httpOnly: false, sameSite: 'lax' } }));
+
 
 // Rate limiting
 app.use(generalLimiter);
@@ -83,10 +95,19 @@ app.use('/imageSave', uploadLimiter, imageRoutes);
 app.use('/voiceHistory', voiceHistoryRoutes);
 
 
+// new user Routes
+app.use("/api/users", userRoute);
+
 // Add a base route to confirm server is running
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
+
+// Allow sending the token to the frontend
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
