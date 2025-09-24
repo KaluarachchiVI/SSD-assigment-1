@@ -21,6 +21,9 @@ const app = express();
 // Load environment variables from .env
 dotenv.config();
 
+// Hide Express fingerprinting
+app.disable('x-powered-by');
+
 // Security headers (must be first)
 app.use(securityHeaders);
 
@@ -87,6 +90,10 @@ app.use('/voiceHistory', voiceHistoryRoutes);
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
+
+// Mount Google OAuth routes
+const googleAuthRouter = require('./config/googleAuth');
+app.use('/google', googleAuthRouter);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
