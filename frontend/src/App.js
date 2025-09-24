@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Favorites from './components/Favorites';
 import History from './components/History';
-import Login from "./components/Auth/Login";
+import Login from "./components/Login";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import TranslatorHome from './components/Translator/TranslatorHome';
 import ImageList from './components/ImageList';
@@ -18,14 +18,7 @@ const App = () => {
       <div>
         <Routes>
           <Route path="/" element={<TranslatorHome />} />
-          <Route
-            path="/login"
-            element={
-              <GoogleOAuthProvider clientId={clientId}>
-                <Login />
-              </GoogleOAuthProvider>
-            }
-          />
+          <Route path="/login"element={<Login />}/>
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/history" element={<History />} />
           <Route path="/imageTranslator" element={< ImageList/>} />
