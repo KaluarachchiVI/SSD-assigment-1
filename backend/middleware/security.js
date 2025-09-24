@@ -61,7 +61,21 @@ const securityHeaders = helmet({
       scriptSrc: ["'self'", "https://apis.google.com"],
       connectSrc: ["'self'", "https://api.mymemory.translated.net"],
       frameSrc: ["'self'", "https://accounts.google.com"],
+      
       objectSrc: ["'none'"],
+
+      // (FIX) Prevent MIME type sniffing
+      xContentTypeOptions: ["nosniff"],
+
+      // (FIX) Prevent cross-site scripting (XSS)
+      xFrameOptions: ["DENY"],
+
+      // (FIX) Prevent clickjacking (CSP bypass)
+      frameAncestors: ["'self'"],
+
+      // (FIX) Prevent information leak via X-Powered-By header
+      xPoweredBy: false,
+
       upgradeInsecureRequests: []
     }
   },

@@ -24,6 +24,12 @@ dotenv.config();
 // Security headers (must be first)
 app.use(securityHeaders);
 
+// (FIX) Prevent MIME type sniffing
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  next();
+});
+
 // Request logging
 app.use(requestLogger);
 
