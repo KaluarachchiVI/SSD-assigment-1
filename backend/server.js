@@ -130,7 +130,7 @@ app.get('/api/history', async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 8175;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is up and running on port: ${PORT}`);
 });
