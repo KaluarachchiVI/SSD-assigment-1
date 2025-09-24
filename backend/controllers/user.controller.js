@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 // REGISTER new user
 const registerUser = async (req, res) => {
   try {
+    
+
     const { email, fullName, password } = req.body;
 
     // 1. Check if user already exists
@@ -26,12 +28,16 @@ const registerUser = async (req, res) => {
     res.status(201).json({ message: "User registered", user: newUser });
   } catch (error) {
     res.status(500).json({ message: "Register failed", error: error.message });
+    
   }
 };
 
 // LOGIN user
 const loginUser = async (req, res) => {
   try {
+
+    console.log("req.body:", req.body);              // 👈 add here
+    console.log("csrf header:", req.headers['csrf-token']); // 👈 add here
     const { email, password } = req.body;
 
     // 1. Find user by email
@@ -63,7 +69,8 @@ const loginUser = async (req, res) => {
 
     res.json({ message: "Login successful" });
   } catch (error) {
-    res.status(500).json({ message: "Login failed", error: error.message });
+    console.error("Login error:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 

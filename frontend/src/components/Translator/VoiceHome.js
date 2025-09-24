@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { voicetranslateText } from './VoicetranslateText';
-import { voicetranslateText2 } from './VoicetranslateText2';
+import React, { useState, useEffect } from 'react';
+import { translateText } from './translateText';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+
 import TranslatorImage from './TranslatorImage';
 import { addFavorite } from '../../services/api';
 import { Filter } from 'bad-words';
@@ -12,8 +13,10 @@ import {
   HeartIcon,
 } from '@heroicons/react/solid';
 import Sidebar from '../Nav/Sidebar';
+import Cookies from 'js-cookie';
+import { useLocation } from 'react-router-dom';
 
-const VoiceHome = ({ user }) => {
+const TranslatorHome = ({ user }) => {
   const [fromText, setFromText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [fromLang, setFromLang] = useState('en');
@@ -22,23 +25,23 @@ const VoiceHome = ({ user }) => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('Text');
   const filter = new Filter();
+  const navigate = useNavigate(); // Initialize navigate function
+
+  const location = useLocation();
+  const initialStateText = location.state?.initialText || '';
+  const [text, setText] = useState(initialStateText);
+  const [users, setUsers] = useState(null);
+
+
+  useEffect(() => {
+    if (initialStateText) {
+      setFromText(initialStateText); // Set fromText when initialStateText is passed
+    }
+  }, [initialStateText]);
 
   // Function to handle translation
   const handleTranslateText = () => {
-    voicetranslateText(
-      fromText,
-      fromLang,
-      toLang,
-      setLoading,
-      setError,
-      setTranslatedText,
-      user
-    );
-  };
-
-   // Function to handle translation
-   const handleTranslateText2 = () => {
-    voicetranslateText2(
+    translateText(
       fromText,
       fromLang,
       toLang,
@@ -87,6 +90,9 @@ const VoiceHome = ({ user }) => {
       setError('');
     }
   };
+  const handleVoice = () => {
+    navigate('/VoiceHome');
+  };
 
   // Function for Text-to-Speech
   const handleTextToSpeech = () => {
@@ -104,6 +110,11 @@ const handleSpeechToText = () => {
     setError('Speech Recognition is not supported in this browser.');
     return;
   }
+
+    // Function to navigate to VvoiceTranslation
+    const handleVoice = () => {
+      navigate('/VoiceHome');
+    };
 
   const recognition = new SpeechRecognition();
   recognition.lang = fromLang; // Set the language for speech recognition
@@ -128,6 +139,34 @@ const handleSpeechToText = () => {
   recognition.start();
 };
 
+  // Fetch profile on page load
+  useEffect(() => {
+    fetch("http://localhost:5000/api/users/profile", {
+      credentials: "include", // send JWT cookie
+    })
+      .then(res => {
+        if (res.status === 401) {
+          navigate("/login"); // not authenticated
+        }
+        return res.json();
+      })
+      .then(data => setUsers(data.user))
+      .catch(err => console.error(err));
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/users/logout", {
+        method: "POST",
+        credentials: "include", // send JWT cookie
+      });
+      const data = await res.json();
+      console.log(data.message);
+      navigate("/"); // redirect to login after logout
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
 
 
   return (
@@ -135,27 +174,55 @@ const handleSpeechToText = () => {
       {/* Sidebar */}
       <Sidebar />
 
+      <div style={{ padding: "50px", textAlign: "center" }}>
+      <h1>Home Page</h1>
+     
+      </div>
+
       {/* Main Content */}
+      
       <div className="flex-1 p-8 bg-gray-100 overflow-auto">
-        <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-lg p-6 md:p-8 mt-16 w-11/12">
+      <div className="flex-1 flex flex-col justify-center items-center bg-gray-100">
+      {users ? (
+        <div>
+          <p>Welcome, {users?.fullName || users?.email}!</p>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#2575fc",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+            onMouseOver={e => (e.target.style.backgroundColor = "#6a11cb")}
+            onMouseOut={e => (e.target.style.backgroundColor = "#2575fc")}
+          >
+            Logout
+          </button>
+        </div>
+      ) : (
+        <p>Loading user info...</p>
+      )}
+      </div>
+      <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-lg p-6 md:p-8 mt-16 w-11/12">
           {/* Tab Selection */}
           <div className="flex border-b border-gray-300 mb-6">
             <button
-              className={`flex-1 py-3 text-lg font-semibold ${
-                activeTab === 'Text'
-                  ? 'border-b-2 border-blue-500 text-blue-500'
-                  : 'text-gray-500'
-              }`}
+              className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'Text'
+                ? 'border-b-2 border-blue-500 text-blue-500'
+                : 'text-gray-500'
+                }`}
               onClick={() => setActiveTab('Text')}
             >
               Text
             </button>
             <button
-              className={`flex-1 py-3 text-lg font-semibold ${
-                activeTab === 'Image'
-                  ? 'border-b-2 border-blue-500 text-blue-500'
-                  : 'text-gray-500'
-              }`}
+              className={`flex-1 py-3 text-lg font-semibold ${activeTab === 'Image'
+                ? 'border-b-2 border-blue-500 text-blue-500'
+                : 'text-gray-500'
+                }`}
               onClick={() => setActiveTab('Image')}
             >
               Image
@@ -191,12 +258,7 @@ const handleSpeechToText = () => {
 
               {/* Language Dropdowns */}
               <div className="flex items-center justify-between gap-4">
-                <button
-                  className="text-gray-600 hover:text-gray-800 transition duration-300"
-                  onClick={handleSpeechToText}
-                >
-                  <MicrophoneIcon className="h-6 w-6" />
-                </button>
+             
 
                 <select
                   value={fromLang}
@@ -223,33 +285,24 @@ const handleSpeechToText = () => {
                   <option value="en">English</option>
                 </select>
 
-                <button
-                  className="text-gray-600 hover:text-gray-800 transition duration-300"
-                  onClick={handleTextToSpeech}
-                >
-                  <SpeakerphoneIcon className="h-6 w-6" />
-                </button>
+         
               </div>
 
               {/* Translate Button */}
               <button
-                onClick={handleTranslateText2}
-                className={`w-full py-3 rounded-lg text-white font-semibold ${
-                  loading ? 'bg-gray-500' : 'bg-blue-600 hover:bg-blue-700'
-                } transition duration-300`}
+                onClick={handleTranslateText}
+                className={`w-full py-3 rounded-lg text-white font-semibold ${loading ? 'bg-gray-500' : 'bg-blue-600 hover:bg-blue-700'
+                  } transition duration-300`}
                 disabled={loading}
               >
                 {loading ? 'Translating...' : 'Translate Text'}
               </button>
-
-              <button
-                onClick={handleTranslateText}
-                className={`w-full py-3 rounded-lg text-white font-semibold ${
-                  loading ? 'bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'
-                } transition duration-300`}
-                disabled={loading}
+                   {/* New Navigation Button for Voice Translation */}
+                   <button
+                onClick={handleVoice}
+                className="w-full py-3 mt-4 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition duration-300"
               >
-                save
+                Voice Translation
               </button>
 
               {error && (
@@ -283,4 +336,4 @@ const handleSpeechToText = () => {
   );
 };
 
-export default VoiceHome;
+export default TranslatorHome;

@@ -8,6 +8,9 @@ import TranslatorHome from './components/Translator/TranslatorHome';
 import ImageList from './components/ImageList';
 import VoiceHome from './components/Translator/VoiceHome';
 import VoiceHistory from './components/VoiceHistory';
+import Register from "./components/Auth/register";
+import LoginPage from "./components/Auth/loginpage";
+
 
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
@@ -17,7 +20,7 @@ const App = () => {
     <Router>
       <div>
         <Routes>
-          <Route path="/" element={<TranslatorHome />} />
+          <Route path="/home" element={<TranslatorHome />} />
           <Route
             path="/login"
             element={
@@ -31,6 +34,8 @@ const App = () => {
           <Route path="/imageTranslator" element={< ImageList/>} />
           <Route path="/voicehome" element={<VoiceHome />} />
           <Route path="/voicehistory" element={<VoiceHistory />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<LoginPage />} />
        
         </Routes>
       </div>
