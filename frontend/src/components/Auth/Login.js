@@ -58,6 +58,36 @@ const Login = () => {
 
     } catch (error) {
       console.error('Login Failed:', error);
+      try {
+        // Fallback: use backend on port 5000 with CSRF header and cookies
+        const cookies = document.cookie.split('; ');
+        const getCookie = (name) => {
+          const entry = cookies.find((row) => row.startsWith(`${name}=`));
+          return entry ? decodeURIComponent(entry.split('=')[1]) : null;
+        };
+        const csrfToken = getCookie('XSRF-TOKEN') || getCookie('_csrf');
+
+        const fallbackResponse = await fetch('http://localhost:5000/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+          },
+          credentials: 'include',
+          body: JSON.stringify({ idToken }),
+        });
+
+        if (!fallbackResponse.ok) {
+          const fallbackText = await fallbackResponse.text();
+          throw new Error(`Fallback auth failed: ${fallbackResponse.status} ${fallbackText}`);
+        }
+
+        const data = await fallbackResponse.json();
+        console.log('Backend Response (fallback):', data);
+        navigate('/home');
+      } catch (fallbackError) {
+        console.error('Fallback Google login failed:', fallbackError);
+      }
     }
   };
 

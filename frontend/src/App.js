@@ -12,6 +12,9 @@ import Register from "./components/Auth/register";
 import LoginPage from "./components/Auth/loginpage";
 import axios from 'axios';
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+if (!clientId) {
+  console.error('REACT_APP_GOOGLE_CLIENT_ID is not set. Define it in frontend/.env and restart the dev server.');
+}
 
 const App = () => {
   // Fetch CSRF token when app loads

@@ -58,8 +58,8 @@ const securityHeaders = helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      scriptSrc: ["'self'", "https://apis.google.com"],
-      connectSrc: ["'self'", "https://api.mymemory.translated.net"],
+      scriptSrc: ["'self'", "https://apis.google.com", "https://accounts.google.com"],
+      connectSrc: ["'self'", "https://api.mymemory.translated.net", "https://accounts.google.com"],
       frameSrc: ["'self'", "https://accounts.google.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
