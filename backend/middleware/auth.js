@@ -1,11 +1,14 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../models/User'); // Google users
+const Users = require('../models/user.model'); // Local users
 
 // Middleware to verify JWT token
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const headerToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const cookieToken = (req.cookies && (req.cookies.token || req.cookies.authToken)) || null;
+    const token = headerToken || cookieToken;
 
     if (!token) {
       return res.status(401).json({ 
@@ -15,21 +18,19 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Verify user still exists
-    const user = await User.findById(decoded.userId);
-    if (!user) {
-      return res.status(401).json({ 
-        error: 'Invalid token. User not found.',
-        code: 'INVALID_TOKEN'
-      });
+
+    // Try to load user from either model; if not found, proceed with decoded userId
+    let user = null;
+    if (decoded.userId) {
+      user = await User.findById(decoded.userId);
+      if (!user) {
+        user = await Users.findById(decoded.userId);
+      }
     }
 
-    req.user = {
-      id: user._id,
-      email: user.email,
-      googleId: user.googleId
-    };
+    req.user = user
+      ? { id: user._id, email: user.email, googleId: user.googleId }
+      : { id: decoded.userId || decoded.id };
     
     next();
   } catch (error) {

@@ -1,5 +1,4 @@
 const express = require("express");
-const csrfProtection = require('../middleware/csrf');
 
 const { 
   registerUser, 
@@ -10,9 +9,9 @@ const { authMiddleware } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
-// Public routes
-router.post("/register", csrfProtection, registerUser);
-router.post("/login", csrfProtection, loginUser);
+// Public routes (global CSRF applies)
+router.post("/register", registerUser);
+router.post("/login", loginUser);
 
 // Protected routes (require authentication)
 router.post("/logout", authMiddleware, logoutUser);

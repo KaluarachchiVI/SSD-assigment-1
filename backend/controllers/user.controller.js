@@ -36,8 +36,13 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
 
-    console.log("req.body:", req.body);              // 👈 add here
-    console.log("csrf header:", req.headers['csrf-token']); // 👈 add here
+    console.log("req.body:", req.body);
+    const csrfHeader =
+      req.headers['x-csrf-token'] ||
+      req.headers['csrf-token'] ||
+      req.headers['x-xsrf-token'] ||
+      req.headers['xsrf-token'];
+    console.log("csrf header (any):", csrfHeader);
     const { email, password } = req.body;
 
     // 1. Find user by email
@@ -52,10 +57,10 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // 3. Create JWT
+    // 3. Create JWT (payload aligned with middlewares expecting userId)
     const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,       // keep in .env
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
@@ -67,7 +72,12 @@ const loginUser = async (req, res) => {
       maxAge: 60 * 60 * 1000,       // 1 hour
     });
 
-    res.json({ message: "Login successful" });
+    // Return token in response as well so frontend can store it
+    res.json({ 
+      message: "Login successful",
+      token,
+      user: { id: user._id, email: user.email, fullName: user.fullName }
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: error.message });

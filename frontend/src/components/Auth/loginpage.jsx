@@ -37,7 +37,7 @@ export default function Login() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "CSRF-Token": csrfToken,
+          "X-CSRF-Token": csrfToken,
         },
         credentials: "include", // Important for cookies
         body: JSON.stringify(form),

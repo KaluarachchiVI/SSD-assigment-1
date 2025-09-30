@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const History = require('../models/history');
 const Bookmark = require('../models/bookmark');
+const { translationLimiter } = require('../middleware/security');
 
-// Add new history entry
-router.post('/add', (req, res) => {
+// Add new history entry (rate limited for translation saves)
+router.post('/add', translationLimiter, (req, res) => {
   const { user, text, translatedText, createdAt } = req.body;
 
   const newHistory = new History({

@@ -19,9 +19,12 @@ const Favorites = () => {
     const fetchFavorites = async () => {
       try {
         const response = await getFavorites();
-        setFavorites(response.data);
+        // Make sure we're working with an array
+        const favoritesData = Array.isArray(response?.data) ? response.data : [];
+        setFavorites(favoritesData);
       } catch (error) {
         console.error('Failed to fetch favorites:', error);
+        setFavorites([]); // Ensure favorites is always an array
       }
     };
 

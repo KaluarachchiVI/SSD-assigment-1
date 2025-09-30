@@ -43,7 +43,11 @@ export const updatevoiceHistoryEntry = (id, updatedData) => {
 };
 
 // API calls for the Favorites feature
-export const getFavorites = () => API.get('/favorites/');
+export const getFavorites = async () => {
+  const response = await API.get('/favorites/');
+  // Ensure we return an array even if the response structure is different
+  return Array.isArray(response.data) ? { data: response.data } : { data: response.data?.favorites || [] };
+};
 export const addFavorite = (text, translatedText, user) =>
   API.post('/favorites/add', { text, translatedText, user });
 export const deleteFavorite = (id) => API.delete(`/favorites/delete/${id}`);

@@ -18,6 +18,8 @@ const {
   errorHandler 
 } = require('./middleware/security');
 
+const { authMiddleware } = require('./middleware/auth.middleware');
+
 const userRoute = require("./routers/user.route.js");  // ✅ matches default
 
 
@@ -36,7 +38,16 @@ app.use(requestLogger);
 app.use(cors({
   origin: 'http://localhost:3000', // frontend URL
   credentials: true,               // allow cookies
-  allowedHeaders: ['Content-Type', 'csrf-token'], // <-- include csrf-token
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-CSRF-Token',
+    'csrf-token',
+    'CSRF-Token',
+    'x-csrf-token',
+    'X-XSRF-TOKEN',
+    'x-xsrf-token'
+  ],
 }));
 
 app.use(corsErrorHandler);
@@ -53,10 +64,36 @@ app.use(bodyParser.urlencoded({
   extended: true 
 }));
 
-// Cookie parser
-app.use(cookieParser());
-app.use(csrf({ cookie: { httpOnly: false, sameSite: 'lax' } }));
+// Cookie parser with secret for signed cookies
+app.use(cookieParser(process.env.COOKIE_SECRET || 'your-secret-key'));
 
+// CSRF Protection setup
+const csrfProtection = csrf({
+  cookie: {
+    key: '_csrf',
+    httpOnly: true, // More secure; handled by the server
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  },
+  // Accept common CSRF header names
+  value: (req) =>
+    req.headers['x-csrf-token'] ||
+    req.headers['csrf-token'] ||
+    req.headers['x-xsrf-token'] ||
+    req.headers['xsrf-token'],
+});
+
+// Apply CSRF protection to all routes
+app.use(csrfProtection);
+
+// Middleware to set the CSRF token cookie on every response
+app.use((req, res, next) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+  next();
+});
 
 // Rate limiting
 app.use(generalLimiter);
@@ -77,9 +114,6 @@ mongoose
     process.exit(1); // Exit process if connection fails
   });
 
-
-
-
 // Import routes
 const authRoutes = require('./routers/authRoute');
 const favoriteRoutes = require('./routers/favoriteRoute');
@@ -87,25 +121,28 @@ const historyRoutes = require('./routers/historyRoute');
 const imageRoutes = require('./routers/imageRouter');
 const voiceHistoryRoutes = require('./routers/voiceHistoryRoute');
 
+// CSRF token endpoint for SPA refresh
+app.get('/api/csrf-token', (req, res) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken(), {
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+  res.json({ csrfToken: req.csrfToken() });
+});
+
 // Route definitions with rate limiting
 app.use('/auth', authLimiter, authRoutes);
 app.use('/favorites', favoriteRoutes);
-app.use('/history', historyRoutes);
+app.use('/history', authMiddleware, historyRoutes);
 app.use('/imageSave', uploadLimiter, imageRoutes);
 app.use('/voiceHistory', voiceHistoryRoutes);
 
-
 // new user Routes
-app.use("/api/users", userRoute);
+app.use("/api/users", authLimiter, userRoute);
 
 // Add a base route to confirm server is running
 app.get('/', (req, res) => {
   res.send('Server is running!');
-});
-
-// Allow sending the token to the frontend
-app.get('/api/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
 });
 
 
