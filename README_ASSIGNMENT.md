@@ -7,10 +7,10 @@
 - **Marks**: 25
 
 ## Group Members
-- [Member 1 Name] - [Index Number]
-- [Member 2 Name] - [Index Number] 
-- [Member 3 Name] - [Index Number]
-- [Member 4 Name] - [Index Number]
+- V.I.Kaluarachchi - IT22054418
+- Yasasvin W.M.Y - IT22276582
+- RAJENDRAM P.A - IT22087874
+- BOGAHAWATTA B P S - IT22148254
 
 ## Project Overview
 **Application**: Multilingual Translation Application
