@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./login.css";
+import "./login.css";       
+import Googlelogin from "./Login";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -86,7 +87,9 @@ export default function Login() {
           <button type="button" onClick={() => navigate("/register")}>
             Go to Register
           </button>
+          
         </form>
+        <Googlelogin />
         {message && <p className="message">{message}</p>}
       </div>
     </div>

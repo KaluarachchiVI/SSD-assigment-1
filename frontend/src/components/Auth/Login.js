@@ -2,6 +2,8 @@ import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode'; // You might need to install this: npm install jwt-decode
 import { useNavigate } from 'react-router-dom';
+import './googlelogin.css';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Your client ID
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -96,12 +98,19 @@ const Login = () => {
   };
 
   return (
+    <GoogleOAuthProvider clientId={clientId}>
+
     <div>
+      <button className='google-login-button'>
       <GoogleLogin
+        className = 'google-icon'
         onSuccess={handleLoginSuccess}
         onError={handleLoginError}
+        
       />
+      </button>
     </div>
+    </GoogleOAuthProvider>
   );
 };
 
